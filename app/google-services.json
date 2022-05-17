@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "751627839395",
+    "project_id": "e-kant-60667",
+    "storage_bucket": "e-kant-60667.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:751627839395:android:2e2d0a526939a50dda5c16",
+        "android_client_info": {
+          "package_name": "com.business.ekant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "751627839395-s6i54sgurgf3t9l6bj8935b6uasfk525.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRPtrlohev6zGkG-wUQdU7r7AzqiblZEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "751627839395-s6i54sgurgf3t9l6bj8935b6uasfk525.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "751627839395-i0mreurf2j74dgh7l0jfjp8usjbiacof.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ekant.cc"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

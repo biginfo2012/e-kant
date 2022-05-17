@@ -1,0 +1,162 @@
+<resources>
+    <string name="app_name">e-KANT</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">ユーザー名</string>
+    <string name="prompt_password">パスワード</string>
+    <string name="action_sign_in">ログイン</string>
+    <string name="action_back">戻る</string>
+    <string name="action_sign_in_short">ログイン</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">有効なメールではありません</string>
+    <string name="invalid_password">パスワードは5文字以上である必要があります</string>
+    <string name="login_failed">ログインに失敗しました</string>
+    <string name="error_invalid_password">このパスワードは短すぎます</string>
+    <string name="error_incorrect_password">このパスワードは間違っています</string>
+    <string name="error_field_required">この項目は必須です</string>
+
+    <string name="error_invalid_email">登録されたメールではありません</string>
+    <string name="error_format_email">メールアドレスフォーマット誤り</string>
+    <string name="error_exist_email">すでに登録されたメールアドレスです</string>
+    <string name="permission_rationale">メールの補完を提供するには、連絡先の権限が必要です。</string>
+
+    <string name="error_exist_today_shift">今日勤務履歴がありません</string>
+    <string name="error_exist_tomo_shift">明日勤務履歴がありません</string>
+
+    <string name="error_exist_month_shift">該当月の勤務履歴がありません</string>
+
+    <string name="gps_service_enable">GPSが無効になっているようですが、有効にしますか？</string>
+
+    <string name="rest_date">休日</string>
+    <string name="rest_request">申請中</string>
+    <string name="btn_rest_request">休日申請</string>
+
+    <string name="early_arrive">早出</string>
+    <string name="late_arrive">遅刻</string>
+    <string name="early_leave">早退</string>
+    <string name="over_time">残業</string>
+    <string name="miss">欠勤</string>
+
+    <string name="msg_token_fmt" translatable="false">FCM registration Token: %s</string>
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="fcm_message">FCM Message</string>
+    <string name="default_notification_channel_name" translatable="true">Messaging</string>
+    <string-array name="hour_thirty">
+        <item>00</item>
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+        <item>31</item>
+        <item>32</item>
+        <item>33</item>
+        <item>34</item>
+        <item>35</item>
+        <item>36</item>
+    </string-array>
+    <string-array name="night_hour_thirty">
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+        <item>31</item>
+        <item>32</item>
+        <item>33</item>
+        <item>34</item>
+        <item>35</item>
+        <item>36</item>
+    </string-array>
+    <string-array name="minute_thirty">
+        <item>00</item>
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>28</item>
+        <item>29</item>
+        <item>30</item>
+        <item>31</item>
+        <item>32</item>
+        <item>33</item>
+        <item>34</item>
+        <item>35</item>
+        <item>36</item>
+        <item>37</item>
+        <item>38</item>
+        <item>39</item>
+        <item>40</item>
+        <item>41</item>
+        <item>42</item>
+        <item>43</item>
+        <item>44</item>
+        <item>45</item>
+        <item>46</item>
+        <item>47</item>
+        <item>48</item>
+        <item>49</item>
+        <item>50</item>
+        <item>51</item>
+        <item>52</item>
+        <item>53</item>
+        <item>54</item>
+        <item>55</item>
+        <item>56</item>
+        <item>57</item>
+        <item>58</item>
+        <item>59</item>
+    </string-array>
+</resources>
