@@ -12,8 +12,8 @@ android {
         applicationId "com.business.ekant"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 14
-        versionName "1.8"
+        versionCode 16
+        versionName "2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

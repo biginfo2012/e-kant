@@ -1,5 +1,7 @@
 package com.business.ekant.data;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.Notification;
@@ -265,6 +267,12 @@ public class LocationService extends Service {
                     if (!result.getString("status").equals("success")) {
                         mErrorMsg = result.getString("message");
                         return false;
+                    }
+                    if (result.getString("status").equals("success")) {
+                        if (locationManager != null) {
+                            locationManager.removeUpdates(listener);
+                        }
+                        //return false;
                     }
                     JSONArray result_str = result.optJSONArray("result");
                 } catch (Exception e) {

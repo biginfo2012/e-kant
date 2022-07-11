@@ -106,27 +106,20 @@ public class MainActivity extends AppCompatActivity {
      * Callback for changes in location.
      */
     //private LocationCallback mLocationCallback;
-    private Location mCurrentLocation;
-
-    private LocationManager mLocationManager;
     Location mLastLocation;
-    String locationProvider;
     String token, fToken = null;
     TextView latitude;
-    Boolean isLast = false, isNear = false;
-    String todayShiftId = null, lastShiftId = null, todayFieldId = null, lastFieldId = null;
-    String toShiftId = null;
+    Boolean isLast = false;
+    String todayShiftId = null;
     Double longitude_field, latitude_field, longitude_cur, latitude_cur, distance;
-    String[] staffAddressArr;
     ArrayList<String> mylist;
 
     int break_at_int = 0, break_time = 0;
 
-    int todaySTime = -1, lastSTime = -1;
-    int todayETime = -1, lastETime = -1;
+    int todaySTime = -1;
+    int todayETime = -1;
     String r_time = null;
 
-    String arrive_checked_at = null, leave_checked_at = null;
     JSONArray resultShift, staffAddress = null;
     JSONObject todayShift = null, lastShift = null;
 
@@ -143,9 +136,6 @@ public class MainActivity extends AppCompatActivity {
 
     private BackPressCloseHandler backPressCloseHandler;
 
-    int limitTime = 180;
-
-
     @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
         String displayName = sp1.getString(Constants.USER_NAME, null);
-        //String fieldName = sp1.getString(Constants.USER_PLACE, null);
         String staff_address = sp1.getString(Constants.STAFF_ADDRESS, null);
         if (staff_address != null) {
             try {
@@ -165,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         checkIntent(getIntent());
 
         token = sp1.getString(Constants.TOKEN, null);
-//        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiNmViMDA2NGNkNmY0N2U3NTMzODRmMDkyN2VlMTRkOWQwNGM5NzM4Y2U1MzA5YTU3ZmMxZjcxN2MxOTExMTU5NWIwMTFmZmQzMjZiZDY1OTMiLCJpYXQiOjE2MzY1Mjc0MTAsIm5iZiI6MTYzNjUyNzQxMCwiZXhwIjoxNjUyMTY1ODEwLCJzdWIiOiIxMjEiLCJzY29wZXMiOltdfQ.HxI60NUyGh8DOZpZZVUD5SOiqKujXzvaor-2PB5-ssteYcDY370pwOEEIPmXpHkre-SkC-K4J_2SJZD-y_AudtMW_Un9T6liPvHpDDRoZy10uzrW44iIRzOaecyQMkzXNSrB3QKOIV2UsU8HN8dGjrt7WK8U12bw2ZDYXsC_VcoV2ad70c1Ofi5X_tO8zAtBKYg_hyUGePzDaTjKErbywFBO3Rf37mEOqBkn_PwYcoLtHsaOcmRdhDIpkSMrgnypjtAjpXTz0A6GVYp_ttrtUa09gm_D3HmC9-mnMJ0N20_j5i_wXbFYEnxiiOOoT9SceP6FnPPSdQW2BVzpeyph52diwH3eXGVDnWjV5mUyuSWNaQbU_wI92J-CyvwEhQ1J8IF0yvnabEjqnjMLC1WelhVQXQSpdKoZrAhzVHz3Zao9T1Mo0MgY-8Tkc6HMrHr9P1e7YHGBNu7ZgUkGjRfYZ-mF5CekedCfmMXMbAfDsAMPCLeasBRD5yTpt-4-1uXWQWwA2fiPFp472girdLYgfJ76eEmq-TpNWP_eAc3I7mUIBvtwwCWzdhSUNMGCjRMgywOqYcrAYQhqbOqhx7gwBKTvKNKpnhbCgb3uGX2AXp3gAEc-K4vc44ul2SSFT-76jVDqKELIwP-LuBFgIy3yj-b0R36Zr9VKveuNc2plv64";
         fToken = sp1.getString(Constants.FTOKEN, null);
         if (fToken != null) {
             mFirebaseTask = new RegisterFirebaseTokenTask(fToken);
@@ -255,15 +243,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 10);
 
-//        final Handler dateHandler = new Handler(getMainLooper());
-//        dateHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                tvDate.setText(new SimpleDateFormat("yyyy年MM月dd日", Locale.JAPAN).format(new Date()));
-//                dateHandler.postDelayed(this, 1000);
-//            }
-//        }, 10);
-
         Spinner spinner = findViewById(R.id.spinner_rest_time);
         ArrayList<String> arrayList = new ArrayList<>();
         arrayList.add("15");
@@ -277,7 +256,6 @@ public class MainActivity extends AppCompatActivity {
         spinner.setAdapter(arrayAdapter);
         int spinnerPosition = arrayAdapter.getPosition("60");
         spinner.setSelection(spinnerPosition);
-        //spinner.setDropDownWidth(120);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -393,41 +371,6 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         String url = "api/v1/client/confirm-arrive";
                                         getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-//                                        alertDialog.setMessage("出勤時間を入力してください。");
-//                                        final EditText input = new EditText(MainActivity.this);
-//                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                                                LinearLayout.LayoutParams.MATCH_PARENT,
-//                                                LinearLayout.LayoutParams.MATCH_PARENT);
-//                                        lp.setMargins(20, 0, 20, 0);
-//                                        input.setLayoutParams(lp);
-//                                        input.setOnTouchListener(otl);
-//
-//                                        alertDialog.setView(input);
-//                                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
-//                                                new DialogInterface.OnClickListener() {
-//                                                    @SuppressLint("ShowToast")
-//                                                    public void onClick(DialogInterface dialog, int which) {
-//                                                        String url = "api/v1/client/confirm-arrive";
-//                                                        String time = input.getText().toString();
-//                                                        if (time == null || time.equals("")) {
-//                                                            Toast.makeText(MainActivity.this, "出勤時間を入力してください。", Toast.LENGTH_SHORT).show();
-//                                                            return;
-//                                                        }
-//                                                        else{
-//                                                            String[] timeList = time.split(":");
-//                                                            int timeInt = Integer.parseInt(timeList[0]) * 60 + Integer.parseInt(timeList[1]);
-//                                                            if (isLast) {
-//                                                                timeInt += 1440;
-//                                                            }
-//                                                            getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                                            dialog.cancel();
-//                                                            dialog.dismiss();
-//                                                        }
-//
-//                                                    }
-//                                                });
-//                                        alertDialog.show();
                                     }
                                 });
 
@@ -449,47 +392,6 @@ public class MainActivity extends AppCompatActivity {
                         alert11.show();
 
                     }
-
-                    //else if (nowSTime < todaySTime - 14) {
-//                        AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
-//                        builder1.setMessage("シフト外勤務が発生しているため勤怠申請早出をお願いします");
-//                        builder1.setCancelable(true);
-//
-//                        builder1.setPositiveButton(
-//                                "取消",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog, int id) {
-//                                        dialog.cancel();
-//                                    }
-//                                });
-//
-//                        builder1.setNegativeButton(
-//                                "申請",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog, int id) {
-//                                        String url = "api/v1/client/confirm-arrive";
-//                                        getResponse(url, todayShiftId, null);
-//                                        dialog.cancel();
-//                                    }
-//                                });
-//
-//                        AlertDialog alert11 = builder1.create();
-//                        alert11.setOnShowListener(new DialogInterface.OnShowListener() {
-//                            @Override
-//                            public void onShow(DialogInterface dialog) {
-//
-//                                Button negButton = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_NEGATIVE);
-//                                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-//                                        LinearLayout.LayoutParams.WRAP_CONTENT,
-//                                        LinearLayout.LayoutParams.WRAP_CONTENT
-//                                );
-//                                params.setMargins(20, 0, 20, 0);
-//                                negButton.setLayoutParams(params);
-//                            }
-//                        });
-//                        alert11.show();
-                    //}
-
                     else {
                         String url = "api/v1/client/confirm-arrive";
                         getResponse(url, todayShiftId, null);
@@ -574,37 +476,6 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         String url = "api/v1/client/confirm-leave";
                                         getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-//                                        alertDialog.setMessage("残業時間を入力してください。");
-//                                        final EditText input = new EditText(MainActivity.this);
-//                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                                                LinearLayout.LayoutParams.MATCH_PARENT,
-//                                                LinearLayout.LayoutParams.MATCH_PARENT);
-//                                        lp.setMargins(20, 0, 20, 0);
-//                                        input.setLayoutParams(lp);
-//                                        input.setOnTouchListener(otl_leave);
-//
-//                                        alertDialog.setView(input);
-//                                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
-//                                                new DialogInterface.OnClickListener() {
-//                                                    public void onClick(DialogInterface dialog, int which) {
-//                                                        String url = "api/v1/client/confirm-leave";
-//                                                        String time = input.getText().toString();
-//                                                        if (time == null || time.equals("")) {
-//                                                            Toast.makeText(getApplicationContext(), "残業時間を入力してください。", Toast.LENGTH_SHORT).show();
-//                                                            return;
-//                                                        }
-//                                                        String[] timeList = time.split(":");
-//                                                        int timeInt = Integer.parseInt(timeList[0]) * 60 + Integer.parseInt(timeList[1]);
-//                                                        if (isLast) {
-//                                                            timeInt += 1440;
-//                                                        }
-//                                                        getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                                        dialog.cancel();
-//                                                        dialog.dismiss();
-//                                                    }
-//                                                });
-//                                        alertDialog.show();
                                     }
                                 });
 
@@ -658,37 +529,6 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                         String url = "api/v1/client/confirm-leave";
                                         getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-//                                        alertDialog.setMessage("早退時間を入力してください。");
-//                                        final EditText input = new EditText(MainActivity.this);
-//                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                                                LinearLayout.LayoutParams.MATCH_PARENT,
-//                                                LinearLayout.LayoutParams.MATCH_PARENT);
-//                                        lp.setMargins(20, 0, 20, 0);
-//                                        input.setLayoutParams(lp);
-//                                        input.setOnTouchListener(otl);
-//
-//                                        alertDialog.setView(input);
-//                                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
-//                                                new DialogInterface.OnClickListener() {
-//                                                    public void onClick(DialogInterface dialog, int which) {
-//                                                        String url = "api/v1/client/confirm-leave";
-//                                                        String time = input.getText().toString();
-//                                                        if (time == null || time.equals("")) {
-//                                                            Toast.makeText(getApplicationContext(), "早退時間を入力してください。", Toast.LENGTH_SHORT).show();
-//                                                            return;
-//                                                        }
-//                                                        String[] timeList = time.split(":");
-//                                                        int timeInt = Integer.parseInt(timeList[0]) * 60 + Integer.parseInt(timeList[1]);
-//                                                        if (isLast) {
-//                                                            timeInt += 1440;
-//                                                        }
-//                                                        getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                                        dialog.cancel();
-//                                                        dialog.dismiss();
-//                                                    }
-//                                                });
-//                                        alertDialog.show();
 
                                     }
                                 });
@@ -796,37 +636,6 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     String url = "api/v1/client/confirm-leave";
                                     getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-//                                    alertDialog.setMessage("早退時間を入力してください。");
-//                                    final EditText input = new EditText(MainActivity.this);
-//                                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                                            LinearLayout.LayoutParams.MATCH_PARENT,
-//                                            LinearLayout.LayoutParams.MATCH_PARENT);
-//                                    lp.setMargins(20, 0, 20, 0);
-//                                    input.setLayoutParams(lp);
-//                                    input.setOnTouchListener(otl_eleave);
-//
-//                                    alertDialog.setView(input);
-//                                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
-//                                            new DialogInterface.OnClickListener() {
-//                                                public void onClick(DialogInterface dialog, int which) {
-//                                                    String url = "api/v1/client/confirm-leave";
-//                                                    String time = input.getText().toString();
-//                                                    if (time == null || time.equals("")) {
-//                                                        Toast.makeText(getApplicationContext(), "早退時間を入力してください。", Toast.LENGTH_SHORT).show();
-//                                                        return;
-//                                                    }
-//                                                    String[] timeList = time.split(":");
-//                                                    int timeInt = Integer.parseInt(timeList[0]) * 60 + Integer.parseInt(timeList[1]);
-//                                                    if (isLast) {
-//                                                        timeInt += 1440;
-//                                                    }
-//                                                    getResponse(url, todayShiftId, String.valueOf(timeInt));
-//                                                    dialog.cancel();
-//                                                    dialog.dismiss();
-//                                                }
-//                                            });
-//                                    alertDialog.show();
                                 }
                             });
 
@@ -888,13 +697,7 @@ public class MainActivity extends AppCompatActivity {
                 int minute = date.getMinutes();
                 int hours = date.getHours();
                 int nowSTime = 60 * hours + minute;
-                // int rest = nowSTime - (int) (nowSTime / 15) * 15;
                 int s_time;
-//                if (rest < 8) {
-//                    s_time = nowSTime - rest;
-//                } else {
-//                    s_time = nowSTime + (15 - rest);
-//                }
 
                 String url = "api/v1/client/confirm-break";
                 try {
@@ -1115,15 +918,14 @@ public class MainActivity extends AppCompatActivity {
 //            @Override
 //            public void run() {
 //            }
-//        }, 300);
-        startService();
-
+//        }, 300)
     }
 
     public void onResume() {
         super.onResume();
         mAuthTask = new UserInfoTask(token);
         mAuthTask.execute((Void) null);
+        startService();
     }
 
     public void onPause() {
@@ -1313,8 +1115,6 @@ public class MainActivity extends AppCompatActivity {
                             latitude.setText(fieldName);
                             SharedPreferences sp = getSharedPreferences(Constants.SHARE_PREF, 0);
                             Editor Ed = sp.edit();
-                            //Ed.putString(Constants.FIELD_NAME, fieldName);
-                            //Ed.putInt(Constants.USER_LTIME, todaySTime - required_time);
                             Ed.apply();
                             longitude_field = Double.parseDouble(field.getString("longitude"));
                             latitude_field = Double.parseDouble(field.getString("latitude"));
@@ -1554,18 +1354,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-//        for(int i = 0; i < resultShift.length(); i++){
-//            try {
-//                JSONObject shiftObj = resultShift.getJSONObject(i);
-//                getParamsObj(shiftObj);
-//                last_stime = last_Ttime;
-//                if(nowSTime < last_stime){
-//                    return shiftObj;
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
         return null;
     }
 
@@ -1658,12 +1446,6 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
         Editor Ed1 = sp1.edit();
         Ed1.putString(Constants.SHIFT_ID, todayShiftId);
-//        if (isLast) {
-//            Ed1.putInt(Constants.USER_STIME, todaySTime + 1440);
-//        } else {
-//            Ed1.putInt(Constants.USER_STIME, todaySTime);
-//        }
-        //Ed.putInt(Constants.USER_LTIME, todaySTime - required_time);
         Ed1.apply();
     }
 
@@ -1780,236 +1562,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-    //check status of btn enable or disable
-//    private void checkStatusButton() {
-//        Date date = new Date();
-//        int minute = date.getMinutes();
-//        int hours = date.getHours();
-//        int nowSTime = 60 * hours + minute;
-//
-//        //if the last day shift exist.
-//        if (lastShift != null) {
-//            String l_arrive_checked_at = null, l_leave_checked_at = null, l_break_at = null;
-//            int l_break_time = 0;
-//            try {
-//                if (lastShift.has("arrive_checked_at") && !lastShift.isNull("arrive_checked_at")) {
-//                    // Do something with object.
-//                    l_arrive_checked_at = lastShift.getString("arrive_checked_at");
-//                }
-//                if (lastShift.has("leave_checked_at") && !lastShift.isNull("leave_checked_at")) {
-//                    // Do something with object.
-//                    l_leave_checked_at = lastShift.getString("leave_checked_at");
-//                }
-//                if (lastShift.has("break_at") && !lastShift.isNull("break_at")) {
-//                    // Do something with object.
-//                    l_break_at = lastShift.getString("break_at");
-//                }
-//                if (lastShift.has("break_time") && !lastShift.isNull("break_time")) {
-//                    // Do something with object.
-//                    l_break_time = lastShift.getInt("break_time");
-//                }
-//
-//                lastShiftId = lastShift.getString("id");
-//                if (lastShift.has("field_id") && !lastShift.isNull("field_id")) {
-//                    // Do something with object.
-//                    lastFieldId = lastShift.getString("field_id");
-//                }
-//                if (lastShift.has("s_time") && !lastShift.isNull("s_time")) {
-//                    // Do something with object.
-//                    lastSTime = lastShift.getInt("s_time");
-//                }
-//                if (lastShift.has("e_time") && !lastShift.isNull("e_time")) {
-//                    // Do something with object.
-//                    lastETime = lastShift.getInt("e_time");
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//            //no arrive and no leave
-//            if (l_arrive_checked_at == null) {
-//                if (nowSTime + 1440 < lastETime - 15) {
-//                    buttonStatusByType(BEFORE_ARRIVE);
-//                    if (l_break_at != null && l_break_time != 0) {
-//                        try {
-//                            Date l_break = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(l_break_at);
-//                            break_at_int = l_break.getHours() * 60 + l_break.getMinutes();
-//                            break_time = l_break_time;
-//                        } catch (ParseException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    todayShiftId = lastShiftId;
-//                    SharedPreferences sp = getSharedPreferences(Constants.SHARE_MAIN, 0);
-//                    Editor Ed = sp.edit();
-//                    Ed.putString(Constants.TODAY_SHIFT_ID, todayShiftId);
-//                    Ed.apply();
-//                    todaySTime = lastSTime;
-//                    todayETime = lastETime;
-//                    isLast = true;
-//                    setFieldInfo(lastFieldId);
-//                    return;
-//                }
-//
-//            }
-//
-//            //no leave with arrive
-//            if (l_arrive_checked_at != null && l_leave_checked_at == null) {
-//                if (nowSTime + 1440 < lastETime - 15) {
-//                    buttonStatusByType(CAN_EARLY_LEAVE);
-//                    if (l_break_at != null && l_break_time != 0) {
-//                        try {
-//                            Date l_break = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(l_break_at);
-//                            break_at_int = l_break.getHours() * 60 + l_break.getMinutes();
-//                            break_time = l_break_time;
-//                        } catch (ParseException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    todayShiftId = lastShiftId;
-//                    SharedPreferences sp = getSharedPreferences(Constants.SHARE_MAIN, 0);
-//                    Editor Ed = sp.edit();
-//                    Ed.putString(Constants.TODAY_SHIFT_ID, todayShiftId);
-//                    Ed.apply();
-//                    todaySTime = lastSTime;
-//                    todayETime = lastETime;
-//                    isLast = true;
-//                    setFieldInfo(lastFieldId);
-//                    return;
-//                }
-//                else if (nowSTime + 1440 >= lastETime - 15 && nowSTime + 1440 < lastETime + limitTime) {
-//                    buttonStatusByType(CAN_LEAVE);
-//                    if (l_break_at != null && l_break_time != 0) {
-//                        try {
-//                            Date l_break = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(l_break_at);
-//                            break_at_int = l_break.getHours() * 60 + l_break.getMinutes();
-//                            break_time = l_break_time;
-//                        } catch (ParseException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    todayShiftId = lastShiftId;
-//                    SharedPreferences sp = getSharedPreferences(Constants.SHARE_MAIN, 0);
-//                    Editor Ed = sp.edit();
-//                    Ed.putString(Constants.TODAY_SHIFT_ID, todayShiftId);
-//                    Ed.apply();
-//                    todaySTime = lastSTime;
-//                    todayETime = lastETime;
-//                    isLast = true;
-//                    setFieldInfo(lastFieldId);
-//                    return;
-//                }
-//            }
-//        }
-//        if (todayShift != null) {
-//            String t_arrive_checked_at = null, t_leave_checked_at = null, t_late_at = null, t_late_check_at = null, t_e_leave_at = null, t_e_leave_checked_at = null, t_over_time_at = null, t_over_time_checked_at = null;
-//            String t_break_at = null;
-//            int t_break_time = 0;
-//            try {
-//                if (todayShift.has("arrive_checked_at") && !todayShift.isNull("arrive_checked_at")) {
-//                    // Do something with object.
-//                    t_arrive_checked_at = todayShift.getString("arrive_checked_at");
-//                }
-//                if (todayShift.has("leave_checked_at") && !todayShift.isNull("leave_checked_at")) {
-//                    // Do something with object.
-//                    t_leave_checked_at = todayShift.getString("leave_checked_at");
-//                }
-//                if (todayShift.has("late_at") && !todayShift.isNull("late_at")) {
-//                    // Do something with object.
-//                    t_late_at = todayShift.getString("late_at");
-//                }
-//                if (todayShift.has("late_checked_at") && !todayShift.isNull("late_checked_at")) {
-//                    // Do something with object.
-//                    t_late_check_at = todayShift.getString("late_checked_at");
-//                }
-//                if (todayShift.has("break_at") && !todayShift.isNull("break_at")) {
-//                    // Do something with object.
-//                    t_break_at = todayShift.getString("break_at");
-//                }
-//                if (todayShift.has("break_time") && !todayShift.isNull("break_time")) {
-//                    // Do something with object.
-//                    t_break_time = todayShift.getInt("break_time");
-//                }
-//                if (todayShift.has("e_leave_at") && !todayShift.isNull("e_leave_at")) {
-//                    // Do something with object.
-//                    t_e_leave_at = todayShift.getString("e_leave_at");
-//                }
-//                if (todayShift.has("e_leave_checked_at") && !todayShift.isNull("e_leave_checked_at")) {
-//                    // Do something with object.
-//                    t_e_leave_checked_at = todayShift.getString("e_leave_checked_at");
-//                }
-//                if (todayShift.has("over_time_at") && !todayShift.isNull("over_time_at")) {
-//                    // Do something with object.
-//                    t_over_time_at = todayShift.getString("over_time_at");
-//                }
-//                if (todayShift.has("over_time_checked_at") && !todayShift.isNull("over_time_checked_at")) {
-//                    // Do something with object.
-//                    t_over_time_checked_at = todayShift.getString("over_time_checked_at");
-//                }
-//                todayShiftId = todayShift.getString("id");
-//                SharedPreferences sp = getSharedPreferences(Constants.SHARE_MAIN, 0);
-//                Editor Ed = sp.edit();
-//                Ed.putString(Constants.TODAY_SHIFT_ID, todayShiftId);
-//                Ed.apply();
-//
-//                if (todayShift.has("s_time") && !todayShift.isNull("s_time")) {
-//                    // Do something with object.
-//                    todaySTime = todayShift.getInt("s_time");
-//                }
-//                if (todayShift.has("e_time") && !todayShift.isNull("e_time")) {
-//                    // Do something with object.
-//                    todayETime = todayShift.getInt("e_time");
-//                }
-//                if (todayShift.has("field_id") && !todayShift.isNull("field_id")) {
-//                    // Do something with object.
-//                    todayFieldId = todayShift.getString("field_id");
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//            if (t_break_at != null && t_break_time != 0) {
-//                try {
-//                    Date t_break = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(t_break_at);
-//                    break_at_int = t_break.getHours() * 60 + t_break.getMinutes();
-//                    break_time = t_break_time;
-//                } catch (ParseException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            //no arrive and no leave
-//            if (t_arrive_checked_at == null) {
-//                if (nowSTime < todayETime) {
-//                    buttonStatusByType(BEFORE_ARRIVE);
-//                } else {
-//                    buttonStatusByType(AFTER_LEAVE);
-//                }
-//                setFieldInfo(todayFieldId);
-//                return;
-//            }
-//
-//            //no leave with arrive
-//            if (t_arrive_checked_at != null && t_leave_checked_at == null) {
-//                if (nowSTime < todayETime - 15) {
-//                    buttonStatusByType(CAN_EARLY_LEAVE);
-//                    setFieldInfo(todayFieldId);
-//                    return;
-//                } else if (nowSTime >= todayETime - 15 && nowSTime < todayETime + limitTime) {
-//                    buttonStatusByType(CAN_LEAVE);
-//                    setFieldInfo(todayFieldId);
-//                    return;
-//                }
-//            }
-//            if (t_leave_checked_at != null) {
-//                setFieldInfo(todayFieldId);
-//                buttonStatusByType(AFTER_LEAVE);
-//                return;
-//            }
-//
-//        }
-//    }
 
     //set btn status by shift status
     private void buttonStatusByType(String status) {
@@ -2225,7 +1777,6 @@ public class MainActivity extends AppCompatActivity {
                         View view = toast.getView();
                         TextView text = (TextView) view.findViewById(android.R.id.message);
                         text.setTextSize(20);
-                        /*Here you can do anything with above textview like text.setTextColor(Color.parseColor("#000000"));*/
                         toast.show();
                         mAuthTask = new UserInfoTask(token);
                         mAuthTask.execute((Void) null);
@@ -2415,9 +1966,6 @@ public class MainActivity extends AppCompatActivity {
                 alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
                     public void onShow(DialogInterface dialog) {
-
-                        //Context context = MainActivity.this;
-                        //Window view = ((AlertDialog)dialog).getWindow();
                         Button negButton = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_NEGATIVE);
                         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -2674,8 +2222,6 @@ public class MainActivity extends AppCompatActivity {
                     Date tomorrow = calendar.getTime();
                     postParams.put("s_date", new SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(tomorrow));
                     postParams.put("e_date", new SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(new Date()));
-//                    postParams.put("s_date", "2021-10-31");
-//                    postParams.put("e_date", "2021-11-01");
 
                     HttpPostRequest httpPostRequest = new HttpPostRequest();
                     result = httpPostRequest.GET(Constants.GET_SHIFT_LIST, postParams, mToken);
@@ -2867,8 +2413,6 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
             } else {
-
-                //if (!userPassword.equals(mPassword))
                 return false;
             }
             return true;

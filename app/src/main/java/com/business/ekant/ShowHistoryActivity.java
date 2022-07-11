@@ -146,31 +146,6 @@ public class ShowHistoryActivity extends AppCompatActivity {
             }
         });
 
-//        logoutIcon.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                AlertDialog.Builder builder1 = new AlertDialog.Builder(ShowHistoryActivity.this);
-//                builder1.setMessage("ログアウトしますか？");
-//                builder1.setCancelable(true);
-//
-//                builder1.setPositiveButton(
-//                        "確認",
-//                        new DialogInterface.OnClickListener() {
-//                            public void onClick(DialogInterface dialog, int id) {
-//                                mLogoutTask = new UserLogoutTask(token);
-//                                mLogoutTask.execute((Void) null);
-//                                dialog.cancel();
-//                            }
-//                        });
-//                AlertDialog alert11 = builder1.create();
-//                alert11.show();
-//                final Button positiveButton = alert11.getButton(AlertDialog.BUTTON_POSITIVE);
-//                LinearLayout.LayoutParams positiveButtonLL = (LinearLayout.LayoutParams) positiveButton.getLayoutParams();
-//                positiveButtonLL.gravity = Gravity.CENTER;
-//                positiveButton.setLayoutParams(positiveButtonLL);
-//            }
-//        });
-
         btnRequestList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
