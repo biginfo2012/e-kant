@@ -58,6 +58,7 @@ import com.business.ekant.data.HttpUtils;
 //import com.example.ekant.data.databinding.ActivityMainBinding;
 import com.business.ekant.data.SendPosService;
 import com.business.ekant.ui.login.LoginActivity;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -101,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
      * Provides access to the Fused Location Provider API.
      */
     public FusedLocationProviderClient mFusedLocationClient;
+    private Location mLocation;
+    String mLatitude = "", mLongitude ="", field_name = "";
 
     /**
      * Callback for changes in location.
@@ -129,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     Button restBtn_index = null;
     Button restNightBtn_index = null;
 
+    private SendPositionTask mSendPositionTask = null;
     private UserInfoTask mAuthTask = null;
     private ConfirmTask mConfirmTask = null;
     private UserLogoutTask mLogoutTask = null;
@@ -140,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(R.layout.activity_main);
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
         String displayName = sp1.getString(Constants.USER_NAME, null);
@@ -391,8 +396,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                         alert11.show();
 
-                    }
-                    else {
+                    } else {
                         String url = "api/v1/client/confirm-arrive";
                         getResponse(url, todayShiftId, null);
                     }
@@ -904,28 +908,12 @@ public class MainActivity extends AppCompatActivity {
          * Intent's "data" field.
          */
 
-        //startService(new Intent(getApplicationContext(), SendPosService.class));
-        //startService(new Intent(getApplicationContext(), LocationService.class));
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(new Intent(getApplicationContext(), LocationService.class));
-//        }
-//        else{
-//            startService(new Intent(getApplicationContext(), LocationService.class));
-//        }
-//        final Handler gpsHandler = new Handler(getMainLooper());
-//        gpsHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//            }
-//        }, 300)
     }
 
     public void onResume() {
         super.onResume();
         mAuthTask = new UserInfoTask(token);
         mAuthTask.execute((Void) null);
-        startService();
     }
 
     public void onPause() {
@@ -1139,7 +1127,7 @@ public class MainActivity extends AppCompatActivity {
                         // Do something with object.
                         JSONObject field_name = explrObject.getJSONObject("field");
                         String fieldName = field_name.getString("name");
-                        if(field.equals(fieldName)){
+                        if (field.equals(fieldName)) {
                             if (explrObject.has("address") && !explrObject.isNull("address")) {
                                 // Do something with object.
                                 address = explrObject.getString("address");
@@ -1865,14 +1853,13 @@ public class MainActivity extends AppCompatActivity {
                 alertDialog.setMessage("現場名：" + field + "\n" + "現地出社時間：" + time + "\n" + "出発場所を選択してください。");
                 View sView = getLayoutInflater().inflate(R.layout.spinner_field, null);
                 Spinner mSpiner = (Spinner) sView.findViewById(R.id.spinner3);
-                if(mylist.size() != 0){
+                if (mylist.size() != 0) {
                     alertDialog.setMessage("現場名：" + field + "\n" + "現地出社時間：" + time + "\n" + "出発場所を選択してください。");
                     ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(MainActivity.this, R.layout.my_spinner, mylist);
                     adapter2.setDropDownViewResource(R.layout.spinner_layout);
                     mSpiner.setAdapter(adapter2);
                     alertDialog.setView(sView);
-                }
-                else{
+                } else {
                     alertDialog.setMessage("現場名：" + field + "\n" + "現地出社時間：" + time);
                 }
 
@@ -1880,11 +1867,11 @@ public class MainActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 String fieldId = null;
-                                if(mylist.size() != 0){
+                                if (mylist.size() != 0) {
                                     fieldId = mSpiner.getSelectedItem().toString();
                                 }
-                                if(fieldId != null){
-                                    SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
+                                if (fieldId != null) {
+                                    SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
 
                                     try {
                                         JSONArray shiftAddress = new JSONArray();
@@ -1985,6 +1972,33 @@ public class MainActivity extends AppCompatActivity {
                 );
                 params.setMargins(20, 0, 0, 0);
                 negButton.setLayoutParams(params);
+            } else if (type.equals("12")) {
+                Location location = getLastKnownLocation();
+                SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
+                todayShiftId = sp1.getString(Constants.SHIFT_ID, null);
+                if (location != null) {
+                    mLatitude = String.valueOf(location.getLatitude());
+                    mLongitude = String.valueOf(location.getLongitude());
+                    Log.d("asd", "latitude : " + mLatitude);
+                    Log.d("asd", "todayShiftId : " + todayShiftId);
+                }
+                String body = "自宅を出発していますか？\n" +
+                        "自宅を出発している場合、位置情報を送信します。";
+                String title = "出発の時間です！";
+                AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                alertDialog.setTitle(title);
+                alertDialog.setMessage(body);
+
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+
+                                mSendPositionTask = new SendPositionTask(token);
+                                mSendPositionTask.execute((Void) null);
+                            }
+                        });
+                alertDialog.show();
             } else {
                 String body = "";
                 String title = "";
@@ -2181,6 +2195,90 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             mConfirmTask = null;
+        }
+    }
+
+    private class SendPositionTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mToken;
+        private String mErrorMsg;
+
+        SendPositionTask(String ftoken) {
+            mToken = ftoken;
+        }
+
+        private boolean isConnected() {
+            ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Activity.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected())
+                return true;
+            else
+                return false;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            if (isConnected()) {
+                ContentValues postParams = new ContentValues();
+                JSONObject result = null;
+                try {
+
+                    postParams.put("shift_id", todayShiftId);
+                    postParams.put("latitude", mLatitude);
+                    postParams.put("longitude", mLongitude);
+
+                    HttpPostRequest httpPostRequest = new HttpPostRequest();
+                    result = httpPostRequest.POST(Constants.CONFIRM_START, postParams, mToken);
+
+                    if (result == null) return false;
+                    if (!result.getString("status").equals("success")) {
+                        mErrorMsg = result.getString("message");
+                        return false;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            } else {
+
+                //if (!userPassword.equals(mPassword))
+                return false;
+            }
+            // TODO: register the new account here.
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean succ) {
+            mFirebaseTask = null;
+
+            if (succ) {
+
+            } else {
+
+                if (mErrorMsg == null) {
+                    Toast.makeText(getApplicationContext(), "失敗しました。", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                switch (mErrorMsg) {
+                    case "ERR_INVALID_FCM_TOKEN":
+                        Toast.makeText(getApplicationContext(), "失敗しました。", Toast.LENGTH_SHORT).show();
+                        break;
+                    case "ERR_INVALID_TOKEN":
+                        Toast.makeText(getApplicationContext(), "失敗しました。", Toast.LENGTH_SHORT).show();
+                        ToLogin();
+                    default:
+                        Toast.makeText(getApplicationContext(), mErrorMsg, Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mFirebaseTask = null;
         }
     }
 
@@ -2456,9 +2554,28 @@ public class MainActivity extends AppCompatActivity {
         return (rad * 180.0 / Math.PI);
     }
 
-    public void startService() {
-        Intent serviceIntent = new Intent(this, LocationService.class);
-        serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
-        ContextCompat.startForegroundService(this, serviceIntent);
+    private void getLocation() {
+        getLastLocation();
+        if (mLocation != null) {
+            mLatitude = String.valueOf(mLocation.getLatitude());
+            mLongitude = String.valueOf(mLocation.getLongitude());
+            Log.d("asd", "fused latitude : " + mLatitude);
+            Log.d("asd", "fused longitude : " + mLongitude);
+
+        }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void getLastLocation() {
+        mFusedLocationClient.getLastLocation()
+                .addOnCompleteListener(
+                        new OnCompleteListener<Location>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Location> task) {
+                                if (task.isSuccessful() && task.getResult() != null) {
+                                    mLocation = task.getResult();
+                                }
+                            }
+                        });
     }
 }
