@@ -914,6 +914,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mAuthTask = new UserInfoTask(token);
         mAuthTask.execute((Void) null);
+        startService();
     }
 
     public void onPause() {
@@ -1645,7 +1646,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean checkLocationPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             int fine_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
             int coarse_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
 
@@ -1655,7 +1656,18 @@ public class MainActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_LOCATION);
                 return false;
             }
-        } else {
+        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+            int fine_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+            int coarse_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if (fine_location_granted != PackageManager.PERMISSION_GRANTED || coarse_location_granted != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+                return false;
+            }
+        }
+        else {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
@@ -1973,15 +1985,10 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(20, 0, 0, 0);
                 negButton.setLayoutParams(params);
             } else if (type.equals("12")) {
-                Location location = getLastKnownLocation();
-                SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
-                todayShiftId = sp1.getString(Constants.SHIFT_ID, null);
-                if (location != null) {
-                    mLatitude = String.valueOf(location.getLatitude());
-                    mLongitude = String.valueOf(location.getLongitude());
-                    Log.d("asd", "latitude : " + mLatitude);
-                    Log.d("asd", "todayShiftId : " + todayShiftId);
-                }
+                String shift_id = extras.getString("shift_id");
+                //SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
+                todayShiftId = shift_id;
+
                 String body = "自宅を出発していますか？\n" +
                         "自宅を出発している場合、位置情報を送信します。";
                 String title = "出発の時間です！";
@@ -1993,6 +2000,14 @@ public class MainActivity extends AppCompatActivity {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
+                                Log.d("asd", "todayShiftId : " + todayShiftId);
+                                Location location = getLastKnownLocation();
+                                if (location != null) {
+                                    mLatitude = String.valueOf(location.getLatitude());
+                                    mLongitude = String.valueOf(location.getLongitude());
+                                    Log.d("asd", "latitude : " + mLatitude);
+
+                                }
 
                                 mSendPositionTask = new SendPositionTask(token);
                                 mSendPositionTask.execute((Void) null);
@@ -2554,16 +2569,16 @@ public class MainActivity extends AppCompatActivity {
         return (rad * 180.0 / Math.PI);
     }
 
-    private void getLocation() {
-        getLastLocation();
-        if (mLocation != null) {
-            mLatitude = String.valueOf(mLocation.getLatitude());
-            mLongitude = String.valueOf(mLocation.getLongitude());
-            Log.d("asd", "fused latitude : " + mLatitude);
-            Log.d("asd", "fused longitude : " + mLongitude);
-
-        }
-    }
+//    private void getLocation() {
+//        getLastLocation();
+//        if (mLocation != null) {
+//            mLatitude = String.valueOf(mLocation.getLatitude());
+//            mLongitude = String.valueOf(mLocation.getLongitude());
+//            Log.d("asd", "fused latitude : " + mLatitude);
+//            Log.d("asd", "fused longitude : " + mLongitude);
+//
+//        }
+//    }
 
     @SuppressWarnings("MissingPermission")
     private void getLastLocation() {
@@ -2577,5 +2592,11 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         });
+    }
+
+    public void startService() {
+        Intent serviceIntent = new Intent(this, LocationService.class);
+        serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
+        ContextCompat.startForegroundService(this, serviceIntent);
     }
 }
