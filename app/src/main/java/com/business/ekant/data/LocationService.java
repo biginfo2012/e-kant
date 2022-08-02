@@ -201,12 +201,7 @@ public class LocationService extends Service {
                         String cu_time = dateFormat.format(calendar.getTime());
                         String[] spTime = cu_time.split(":");
                         int time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
-                        if (user_stime <= time - 5) {
-                            SharedPreferences sp2 = getSharedPreferences(Constants.SHARE_PREF, 0);
-                            SharedPreferences.Editor Ed2 = sp2.edit();
-                            Ed2.putString(Constants.USER_SendPos, todayShiftId);
-                            Ed2.putInt(Constants.USER_STIME, 0);
-                            Ed2.apply();
+                        if (user_stime <= time) {
                             latitude = String.valueOf(loc.getLatitude());
                             longitude = String.valueOf(loc.getLongitude());
                             token = sp1.getString(Constants.TOKEN, null);
@@ -272,9 +267,18 @@ public class LocationService extends Service {
                         if (locationManager != null) {
                             locationManager.removeUpdates(listener);
                         }
+                        Boolean result_status = result.getBoolean("result");
+                        if(result_status){
+                            SharedPreferences sp2 = getSharedPreferences(Constants.SHARE_PREF, 0);
+                            SharedPreferences.Editor Ed2 = sp2.edit();
+                            Ed2.putString(Constants.USER_SendPos, todayShiftId);
+                            Ed2.putInt(Constants.USER_STIME, 0);
+                            Ed2.apply();
+                        }
+
                         //return false;
                     }
-                    JSONArray result_str = result.optJSONArray("result");
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;

@@ -2251,6 +2251,18 @@ public class MainActivity extends AppCompatActivity {
                         mErrorMsg = result.getString("message");
                         return false;
                     }
+                    if (result.getString("status").equals("success")) {
+                        Boolean result_status = result.getBoolean("result");
+                        if(result_status){
+                            SharedPreferences sp2 = getSharedPreferences(Constants.SHARE_PREF, 0);
+                            SharedPreferences.Editor Ed2 = sp2.edit();
+                            Ed2.putString(Constants.USER_SendPos, todayShiftId);
+                            Ed2.putInt(Constants.USER_STIME, 0);
+                            Ed2.apply();
+                        }
+
+                        //return false;
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
