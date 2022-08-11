@@ -1345,8 +1345,8 @@ public class ShowHistoryActivity extends AppCompatActivity {
             int pixels_w = (int) (350 * this.getResources().getDisplayMetrics().density);
             int pixels_h = (int) (500 * this.getResources().getDisplayMetrics().density);
             alertDialog.getWindow().setLayout(pixels_w, pixels_h);
-            TextView textView = (TextView) alertDialog.findViewById(android.R.id.message);
-            textView.setTextSize(15);
+//            TextView textView = (TextView) alertDialog.findViewById(android.R.id.message);
+//            textView.setTextSize(15);
         }
 
 

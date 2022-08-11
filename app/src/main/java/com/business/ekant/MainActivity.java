@@ -93,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String CAN_REST = "can_rest";
     private static final String AFTER_LEAVE = "after_leave";
 
+    int user_stime;
+
     /**
      * Contains parameters used by {@link com.google.android.gms.location.FusedLocationProviderApi}.
      */
@@ -737,8 +739,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
                                 View view = toast.getView();
-                                TextView text = (TextView) view.findViewById(android.R.id.message);
-                                text.setTextSize(20);
+//                                TextView text = (TextView) view.findViewById(android.R.id.message);
+//                                text.setTextSize(20);
                                 toast.show();
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
@@ -852,8 +854,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
                                 View view = toast.getView();
-                                TextView text = (TextView) view.findViewById(android.R.id.message);
-                                text.setTextSize(20);
+//                                TextView text = (TextView) view.findViewById(android.R.id.message);
+//                                text.setTextSize(20);
                                 toast.show();
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
@@ -914,7 +916,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mAuthTask = new UserInfoTask(token);
         mAuthTask.execute((Void) null);
-        startService();
+        //startService();
     }
 
     public void onPause() {
@@ -1775,8 +1777,8 @@ public class MainActivity extends AppCompatActivity {
 
                         Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
                         View view = toast.getView();
-                        TextView text = (TextView) view.findViewById(android.R.id.message);
-                        text.setTextSize(20);
+//                        TextView text = (TextView) view.findViewById(android.R.id.message);
+//                        text.setTextSize(20);
                         toast.show();
                         mAuthTask = new UserInfoTask(token);
                         mAuthTask.execute((Void) null);
@@ -1904,6 +1906,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                 alertDialog.show();
             } else if (type.equals("2")) {
+
                 String field_admin = extras.getString("admin_tel");
                 String agent_react = extras.getString("emergency_tel");
                 String shift_id = extras.getString("shift_id");
@@ -1922,6 +1925,19 @@ public class MainActivity extends AppCompatActivity {
                 Ed.putString(Constants.SHIFT_ID, shift_id);
                 Ed.putInt(Constants.USER_STIME, time_int);
                 Ed.putString(Constants.FIELD_NAME, field_name);
+                user_stime = time_int;
+                getFieldInfoTime(field_name);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+                Calendar calendar = Calendar.getInstance();
+                String cu_time = dateFormat.format(calendar.getTime());
+                String[] spTime = cu_time.split(":");
+                int now_time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
+                if(now_time <= user_stime + 5){
+                    startService();
+                }
+                else{
+                    stopService();
+                }
                 //Ed.putInt(Constants.USER_LTIME, todaySTime - required_time);
                 Ed.apply();
 
@@ -1985,6 +2001,7 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(20, 0, 0, 0);
                 negButton.setLayoutParams(params);
             } else if (type.equals("12")) {
+                stopService();
                 String shift_id = extras.getString("shift_id");
                 //SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
                 todayShiftId = shift_id;
@@ -2185,8 +2202,8 @@ public class MainActivity extends AppCompatActivity {
                 if (health_status != "0") {
                     Toast toast = Toast.makeText(getApplicationContext(), mErrorMsg, Toast.LENGTH_LONG);
                     View view = toast.getView();
-                    TextView text = (TextView) view.findViewById(android.R.id.message);
-                    text.setTextSize(20);
+//                    TextView text = (TextView) view.findViewById(android.R.id.message);
+//                    text.setTextSize(20);
                     toast.show();
                 }
 
@@ -2606,9 +2623,81 @@ public class MainActivity extends AppCompatActivity {
                         });
     }
 
+    private void getFieldInfoTime(String field_name) {
+        String fieldId = null;
+        JSONArray shiftAddress = null;
+        SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
+        try {
+            staffAddress = new JSONArray(sp1.getString(Constants.STAFF_ADDRESS, null));
+            if (sp1.getString(Constants.SHIFT_ADDRESS, null) != null) {
+                shiftAddress = new JSONArray(sp1.getString(Constants.SHIFT_ADDRESS, null));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (shiftAddress != null) {
+            for (int j = 0; j < shiftAddress.length(); j++) {
+                try {
+                    JSONObject obj = shiftAddress.getJSONObject(j);
+                    if (obj.has(todayShiftId) && !obj.isNull(todayShiftId)) {
+                        fieldId = obj.getString(todayShiftId);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (staffAddress != null) {
+            for (int i = 0; i < staffAddress.length(); i++) {
+                try {
+                    JSONObject explrObject = staffAddress.getJSONObject(i);
+                    if (fieldId != null) {
+                        if (explrObject.has("address") && !explrObject.isNull("address")) {
+                            String fid = explrObject.getString("address");
+                            if (fid.equals(fieldId)) {
+                                if (explrObject.has("field") && !explrObject.isNull("field")) {
+                                    // Do something with object.
+                                    JSONObject field = explrObject.getJSONObject("field");
+                                    String fieldName = field.getString("name");
+                                    if (fieldName.equals(field_name)) {
+                                        if (explrObject.has("required_time") && !explrObject.isNull("required_time")) {
+                                            int required_time = explrObject.getInt("required_time");
+                                            user_stime = user_stime - required_time;
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (explrObject.has("field") && !explrObject.isNull("field")) {
+                            // Do something with object.
+                            JSONObject field = explrObject.getJSONObject("field");
+                            String fieldName = field.getString("name");
+                            if (fieldName.equals(field_name)) {
+                                if (explrObject.has("required_time") && !explrObject.isNull("required_time")) {
+                                    int required_time = explrObject.getInt("required_time");
+                                    user_stime = user_stime - required_time;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void startService() {
         Intent serviceIntent = new Intent(this, LocationService.class);
         serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
         ContextCompat.startForegroundService(this, serviceIntent);
+    }
+    public void stopService() {
+        Intent serviceIntent = new Intent(this, LocationService.class);
+        serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
+        stopService(serviceIntent);
     }
 }

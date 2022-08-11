@@ -201,14 +201,14 @@ public class LocationService extends Service {
                         String cu_time = dateFormat.format(calendar.getTime());
                         String[] spTime = cu_time.split(":");
                         int time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
-                        if (user_stime <= time) {
+                        //if (user_stime <= time) {
                             latitude = String.valueOf(loc.getLatitude());
                             longitude = String.valueOf(loc.getLongitude());
                             token = sp1.getString(Constants.TOKEN, null);
                             Log.d("tag", "latitude:" + latitude);
                             mFirebaseTask = new LocationService.RegisterFirebaseTokenTask(token);
                             mFirebaseTask.execute((Void) null);
-                        }
+                        //}
                     }
                 }
             }
