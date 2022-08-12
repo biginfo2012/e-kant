@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -738,9 +739,12 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
                                 Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
-                                View view = toast.getView();
+//                                View view = toast.getView();
 //                                TextView text = (TextView) view.findViewById(android.R.id.message);
 //                                text.setTextSize(20);
+                                ViewGroup group = (ViewGroup) toast.getView();
+                                TextView messageTextView = (TextView) group.getChildAt(0);
+                                messageTextView.setTextSize(20);
                                 toast.show();
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
@@ -856,7 +860,10 @@ public class MainActivity extends AppCompatActivity {
                                 View view = toast.getView();
 //                                TextView text = (TextView) view.findViewById(android.R.id.message);
 //                                text.setTextSize(20);
-                                toast.show();
+//                                toast.show();
+                                ViewGroup group = (ViewGroup) toast.getView();
+                                TextView messageTextView = (TextView) group.getChildAt(0);
+                                messageTextView.setTextSize(20);
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
 
@@ -1709,6 +1716,7 @@ public class MainActivity extends AppCompatActivity {
         );
         params.setMargins(20, 0, 0, 0);
         negButton.setLayoutParams(params);
+
     }
 
     private Boolean getIsNear(Location location) {
@@ -1776,9 +1784,12 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
-                        View view = toast.getView();
+//                        View view = toast.getView();
 //                        TextView text = (TextView) view.findViewById(android.R.id.message);
 //                        text.setTextSize(20);
+                        ViewGroup group = (ViewGroup) toast.getView();
+                        TextView messageTextView = (TextView) group.getChildAt(0);
+                        messageTextView.setTextSize(20);
                         toast.show();
                         mAuthTask = new UserInfoTask(token);
                         mAuthTask.execute((Void) null);
@@ -2090,6 +2101,8 @@ public class MainActivity extends AppCompatActivity {
                         alertDialog.setMessage(body + "申請が" + title + "されれました。再申請お願いします。");
                     }
 
+
+
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
@@ -2201,9 +2214,12 @@ public class MainActivity extends AppCompatActivity {
             if (success) {
                 if (health_status != "0") {
                     Toast toast = Toast.makeText(getApplicationContext(), mErrorMsg, Toast.LENGTH_LONG);
-                    View view = toast.getView();
-//                    TextView text = (TextView) view.findViewById(android.R.id.message);
-//                    text.setTextSize(20);
+                    //View view = toast.getView();
+                    //TextView text = (TextView) view.findViewById(android.R.id.message);
+                    //text.setTextSize(20);
+                    ViewGroup group = (ViewGroup) toast.getView();
+                    TextView messageTextView = (TextView) group.getChildAt(0);
+                    messageTextView.setTextSize(20);
                     toast.show();
                 }
 
