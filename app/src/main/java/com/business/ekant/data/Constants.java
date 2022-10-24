@@ -12,6 +12,7 @@ public class Constants {
     public static final String USER_PLACE = "Field";
     public static final String USER_STIME = "User_Stime";
     public static final String USER_SendPos = "USER_SendPos";
+    public static final String GET_SHIFT = "GET_SHIFT";
     public static final String USER_LTIME = "User_Ltime";
     public static final String SHIFT_ID = "Shift_Id";
     public static final String TODAY_SHIFT_ID = "Today_Shift_Id";

@@ -25,6 +25,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -125,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     int todaySTime = -1;
     int todayETime = -1;
     String r_time = null;
+    String getShiftDay = null;
 
     JSONArray resultShift, staffAddress = null;
     JSONObject todayShift = null, lastShift = null;
@@ -151,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
         String displayName = sp1.getString(Constants.USER_NAME, null);
+        getShiftDay = sp1.getString(Constants.GET_SHIFT, null);
         String staff_address = sp1.getString(Constants.STAFF_ADDRESS, null);
         if (staff_address != null) {
             try {
@@ -243,6 +247,21 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 tvClock.setText(new SimpleDateFormat("HH:mm", Locale.JAPAN).format(new Date()));
                 tvDate.setText(new SimpleDateFormat("yyyy年MM月dd日", Locale.JAPAN).format(new Date()));
+                getShiftDay = sp1.getString(Constants.GET_SHIFT, null);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+                Calendar calendar = Calendar.getInstance();
+                String cu_time = dateFormat.format(calendar.getTime());
+                String today = new SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(new Date());
+                String[] spTime = cu_time.split(":");
+                int now_time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
+                if(now_time > 15){
+                    if(getShiftDay == null || !today.equals(getShiftDay)){
+                        Log.d("getShift", "get shift call : " + getShiftDay);
+                        mAuthTask = new UserInfoTask(token);
+                        mAuthTask.execute((Void) null);
+                    }
+
+                }
                 JSONObject todayShift = checkTodayShift();
                 //checkStatusButton();
                 checkButtonStatus(todayShift);
@@ -328,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
                     AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
                     builder1.setMessage("出勤場所ではありません。\n" +
                             "勤務場所でボタンを押してください。お願いします。");
+                    //builder1.setMessage(location.getLatitude() + "," + location.getLongitude() + "," + latitude_field + "," + longitude_field);
                     builder1.setCancelable(true);
 
                     builder1.setPositiveButton(
@@ -676,6 +696,23 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Location location = getLastKnownLocation();
+                if (location == null) {
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                    builder1.setMessage("位置情報を得ることができません。\n" +
+                            "ネットワークやGPSの状態を確認してください。");
+                    builder1.setCancelable(true);
+
+                    builder1.setPositiveButton(
+                            "確認",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert11 = builder1.create();
+                    alert11.show();
+                    return;
+                }
                 if (!getIsNear(location)) {
                     AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
                     builder1.setMessage("出勤場所ではありません。\n" +
@@ -738,14 +775,17 @@ public class MainActivity extends AppCompatActivity {
                                     ToLogin();
                                     return;
                                 }
-                                Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
+                                SpannableStringBuilder biggerText = new SpannableStringBuilder(rpMessage);
+                                biggerText.setSpan(new RelativeSizeSpan(1.35f), 0, rpMessage.length(), 0);
+                                Toast.makeText(getApplicationContext(), biggerText, Toast.LENGTH_LONG).show();
+                                //Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
 //                                View view = toast.getView();
 //                                TextView text = (TextView) view.findViewById(android.R.id.message);
 //                                text.setTextSize(20);
-                                ViewGroup group = (ViewGroup) toast.getView();
-                                TextView messageTextView = (TextView) group.getChildAt(0);
-                                messageTextView.setTextSize(20);
-                                toast.show();
+//                                ViewGroup group = (ViewGroup) toast.getView();
+//                                TextView messageTextView = (TextView) group.getChildAt(0);
+//                                messageTextView.setTextSize(20);
+//                                toast.show();
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
 
@@ -856,14 +896,19 @@ public class MainActivity extends AppCompatActivity {
                                     ToLogin();
                                     return;
                                 }
-                                Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
-                                View view = toast.getView();
+                                SpannableStringBuilder biggerText = new SpannableStringBuilder(rpMessage);
+                                biggerText.setSpan(new RelativeSizeSpan(1.35f), 0, rpMessage.length(), 0);
+                                Toast.makeText(getApplicationContext(), biggerText, Toast.LENGTH_LONG).show();
+
+//                                Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
+//                                View view = toast.getView();
 //                                TextView text = (TextView) view.findViewById(android.R.id.message);
 //                                text.setTextSize(20);
 //                                toast.show();
-                                ViewGroup group = (ViewGroup) toast.getView();
-                                TextView messageTextView = (TextView) group.getChildAt(0);
-                                messageTextView.setTextSize(20);
+//                                ViewGroup group = (ViewGroup) toast.getView();
+//                                TextView messageTextView = (TextView) group.getChildAt(0);
+//                                messageTextView.setTextSize(20);
+
                                 mAuthTask = new UserInfoTask(token);
                                 mAuthTask.execute((Void) null);
 
@@ -1306,7 +1351,7 @@ public class MainActivity extends AppCompatActivity {
                     nowTime = nowSTime;
                 }
 
-                if (last_stime < nowTime && nowTime < last_etime) {
+                if (last_stime <= nowTime && nowTime <= last_etime) {
                     if ((e_leave_at != null && e_leave_checked_at != null) || (over_time_at != null && over_time_checked_at != null)) {
 
                     } else {
@@ -1317,19 +1362,22 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        for (int i = 0; i < resultShift.length(); i++) {
-            try {
-                JSONObject shiftObj = resultShift.getJSONObject(i);
-                getParamsObj(shiftObj);
-                shift_date = t_shift_date;
-                last_stime = last_Ttime;
-                if (today.equals(shift_date)) {
-                    return shiftObj;
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+
+//        for (int i = 0; i < resultShift.length(); i++) {
+//            try {
+//                JSONObject shiftObj = resultShift.getJSONObject(i);
+//                getParamsObj(shiftObj);
+//                shift_date = t_shift_date;
+//                last_stime = last_Ttime;
+//                if (today.equals(shift_date)) {
+//                    return shiftObj;
+//                }
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+
 
         for (int i = 0; i < resultShift.length(); i++) {
             String l_arrive_checked_at = null, l_leave_checked_at = null;
@@ -1343,10 +1391,30 @@ public class MainActivity extends AppCompatActivity {
                 if (l_arrive_checked_at != null && l_leave_checked_at == null) {
                     if (!today.equals(shift_date)) {
                         nowTime = nowSTime + 1440;
-                        if (nowTime < 2160) {
-                            return shiftObj;
-                        }
+                    } else {
+                        nowTime = nowSTime;
                     }
+                    if (nowTime < 2160) {
+                        return shiftObj;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        for (int i = 0; i < resultShift.length(); i++) {
+            try {
+                JSONObject shiftObj = resultShift.getJSONObject(i);
+                getParamsObj(shiftObj);
+                shift_date = t_shift_date;
+                //no leave with arrive
+                if (!today.equals(shift_date)) {
+                    nowTime = nowSTime + 1440;
+                } else {
+                    nowTime = nowSTime;
+                }
+                if (nowTime <= last_Ttime) {
+                    return shiftObj;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -1783,14 +1851,17 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
 
-                        Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
+                        SpannableStringBuilder biggerText = new SpannableStringBuilder(rpMessage);
+                        biggerText.setSpan(new RelativeSizeSpan(1.35f), 0, rpMessage.length(), 0);
+                        Toast.makeText(getApplicationContext(), biggerText, Toast.LENGTH_LONG).show();
+                        //Toast toast = Toast.makeText(getApplicationContext(), rpMessage, Toast.LENGTH_LONG);
 //                        View view = toast.getView();
 //                        TextView text = (TextView) view.findViewById(android.R.id.message);
 //                        text.setTextSize(20);
-                        ViewGroup group = (ViewGroup) toast.getView();
-                        TextView messageTextView = (TextView) group.getChildAt(0);
-                        messageTextView.setTextSize(20);
-                        toast.show();
+//                        ViewGroup group = (ViewGroup) toast.getView();
+//                        TextView messageTextView = (TextView) group.getChildAt(0);
+//                        messageTextView.setTextSize(20);
+//                        toast.show();
                         mAuthTask = new UserInfoTask(token);
                         mAuthTask.execute((Void) null);
 
@@ -1943,12 +2014,7 @@ public class MainActivity extends AppCompatActivity {
                 String cu_time = dateFormat.format(calendar.getTime());
                 String[] spTime = cu_time.split(":");
                 int now_time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
-                if(now_time <= user_stime + 5){
-                    startService();
-                }
-                else{
-                    stopService();
-                }
+
                 //Ed.putInt(Constants.USER_LTIME, todaySTime - required_time);
                 Ed.apply();
 
@@ -1974,6 +2040,12 @@ public class MainActivity extends AppCompatActivity {
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {
                                                 dialog.dismiss();
+                                                if(now_time <= user_stime + 5){
+                                                    startService();
+                                                }
+                                                else{
+                                                    stopService();
+                                                }
                                             }
                                         });
                                 alertDialog.show();
@@ -1985,6 +2057,12 @@ public class MainActivity extends AppCompatActivity {
                                 mConfirmTask = new ConfirmTask(token, Constants.CONFIRM_TODAY, "1", shift_id, null);
                                 mConfirmTask.execute((Void) null);
                                 dialog.dismiss();
+                                if(now_time <= user_stime + 5){
+                                    startService();
+                                }
+                                else{
+                                    stopService();
+                                }
 
                             }
                         });
@@ -2012,7 +2090,7 @@ public class MainActivity extends AppCompatActivity {
                 params.setMargins(20, 0, 0, 0);
                 negButton.setLayoutParams(params);
             } else if (type.equals("12")) {
-                stopService();
+                //stopService();
                 String shift_id = extras.getString("shift_id");
                 //SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF,  0);
                 todayShiftId = shift_id;
@@ -2100,8 +2178,6 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         alertDialog.setMessage(body + "申請が" + title + "されれました。再申請お願いします。");
                     }
-
-
 
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "確　認",
                             new DialogInterface.OnClickListener() {
@@ -2213,14 +2289,17 @@ public class MainActivity extends AppCompatActivity {
 
             if (success) {
                 if (health_status != "0") {
-                    Toast toast = Toast.makeText(getApplicationContext(), mErrorMsg, Toast.LENGTH_LONG);
+                    SpannableStringBuilder biggerText = new SpannableStringBuilder(mErrorMsg);
+                    biggerText.setSpan(new RelativeSizeSpan(1.35f), 0, mErrorMsg.length(), 0);
+                    Toast.makeText(getApplicationContext(), biggerText, Toast.LENGTH_LONG).show();
+                    //Toast toast = Toast.makeText(getApplicationContext(), mErrorMsg, Toast.LENGTH_LONG);
                     //View view = toast.getView();
                     //TextView text = (TextView) view.findViewById(android.R.id.message);
                     //text.setTextSize(20);
-                    ViewGroup group = (ViewGroup) toast.getView();
-                    TextView messageTextView = (TextView) group.getChildAt(0);
-                    messageTextView.setTextSize(20);
-                    toast.show();
+//                    ViewGroup group = (ViewGroup) toast.getView();
+//                    TextView messageTextView = (TextView) group.getChildAt(0);
+//                    messageTextView.setTextSize(20);
+//                    toast.show();
                 }
 
             } else {
@@ -2389,6 +2468,11 @@ public class MainActivity extends AppCompatActivity {
                         mErrorMsg = result.getString("message");
                         return false;
                     }
+
+                    SharedPreferences sp2 = getSharedPreferences(Constants.SHARE_PREF, 0);
+                    SharedPreferences.Editor Ed2 = sp2.edit();
+                    Ed2.putString(Constants.GET_SHIFT, new SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(new Date()));
+                    Ed2.apply();
 
                     resultShift = result.optJSONArray("result");
 

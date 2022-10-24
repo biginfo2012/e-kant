@@ -201,14 +201,23 @@ public class LocationService extends Service {
                         String cu_time = dateFormat.format(calendar.getTime());
                         String[] spTime = cu_time.split(":");
                         int time = 60 * Integer.parseInt(spTime[0]) + Integer.parseInt(spTime[1]);
-                        //if (user_stime <= time) {
+                        if(time >= user_stime + 5){
+                            if (locationManager != null) {
+                                locationManager.removeUpdates(listener);
+                            }
+                            onDestroy();
+                        }
+                        else{
+                            //if (user_stime <= time) {
                             latitude = String.valueOf(loc.getLatitude());
                             longitude = String.valueOf(loc.getLongitude());
                             token = sp1.getString(Constants.TOKEN, null);
                             Log.d("tag", "latitude:" + latitude);
                             mFirebaseTask = new LocationService.RegisterFirebaseTokenTask(token);
                             mFirebaseTask.execute((Void) null);
-                        //}
+                            //}
+                        }
+
                     }
                 }
             }
@@ -255,6 +264,7 @@ public class LocationService extends Service {
                     postParams.put("shift_id", todayShiftId);
                     postParams.put("latitude", latitude);
                     postParams.put("longitude", longitude);
+
                     HttpPostRequest httpPostRequest = new HttpPostRequest();
                     result = httpPostRequest.POST(Constants.CONFIRM_START, postParams, mToken);
 
@@ -264,16 +274,19 @@ public class LocationService extends Service {
                         return false;
                     }
                     if (result.getString("status").equals("success")) {
-                        if (locationManager != null) {
-                            locationManager.removeUpdates(listener);
-                        }
+
                         Boolean result_status = result.getBoolean("result");
+                        Log.d("tag", "result_status:" + result_status);
                         if(result_status){
+                            if (locationManager != null) {
+                                locationManager.removeUpdates(listener);
+                            }
                             SharedPreferences sp2 = getSharedPreferences(Constants.SHARE_PREF, 0);
                             SharedPreferences.Editor Ed2 = sp2.edit();
                             Ed2.putString(Constants.USER_SendPos, todayShiftId);
                             Ed2.putInt(Constants.USER_STIME, 0);
                             Ed2.apply();
+                            onDestroy();
                         }
 
                         //return false;

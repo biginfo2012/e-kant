@@ -421,7 +421,10 @@ public class ShowHistoryActivity extends AppCompatActivity {
                                     dialog.dismiss();
                                 }
                             });
-                    alertDialog.show();
+                    if(!popStr.equals("")){
+                        alertDialog.show();
+                    }
+
                 }
                 else if(validPostT){
                     showProgress(true);
@@ -1339,7 +1342,7 @@ public class ShowHistoryActivity extends AppCompatActivity {
         }
         alertDialog.setMessage(popStr);
        //alertDialog.setView(poplayout);
-        if(firstLoad){
+        if(firstLoad && !popStr.equals("")){
             firstLoad = false;
             alertDialog.show();
             int pixels_w = (int) (350 * this.getResources().getDisplayMetrics().density);
@@ -1347,6 +1350,10 @@ public class ShowHistoryActivity extends AppCompatActivity {
             alertDialog.getWindow().setLayout(pixels_w, pixels_h);
 //            TextView textView = (TextView) alertDialog.findViewById(android.R.id.message);
 //            textView.setTextSize(15);
+//            ViewGroup group = (ViewGroup) alertDialog.getView();
+//            TextView messageTextView = (TextView) group.getChildAt(0);
+//            messageTextView.setTextSize(20);
+            //toast.show();
         }
 
 

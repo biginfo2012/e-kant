@@ -64,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "MyFirebaseMsgService";
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private static final int MY_PERMISSIONS_REQUEST_BACKGROUND_LOCATION = 66;
     private LocationManager mLocationManager;
     String locationProvider;
 
@@ -219,13 +220,16 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-
-
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
         String saved_token = sp1.getString(Constants.TOKEN, null);
 
         if (saved_token != null) {
             if (!saved_token.equals("")) {
+                String email = sp1.getString(Constants.SHARE_EMAIL, null);
+                String password = sp1.getString(Constants.SHARE_PWD, null);
+
+                mAuthTask = new UserLoginTask(email, password);
+                mAuthTask.execute((Void) null);
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
@@ -258,7 +262,78 @@ public class LoginActivity extends AppCompatActivity {
         //mLocationManager.removeUpdates(mlocationListener);
     }
 
-    public boolean checkLocationPermission() {
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            ) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                new AlertDialog.Builder(this)
+                        .setTitle("Location Permission Needed")
+                        .setMessage("This app needs the Location permission, please accept to use location functionality")
+                        .setPositiveButton(
+                        "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                requestLocationPermission();
+                                dialog.cancel();
+                            }
+                        })
+                        .create()
+                        .show();
+            } else {
+                // No explanation needed, we can request the permission.
+                requestLocationPermission();
+            }
+        } else {
+            checkBackgroundLocation();
+        }
+    }
+
+    private void checkBackgroundLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestBackgroundLocationPermission();
+        }
+    }
+
+    private void requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                MY_PERMISSIONS_REQUEST_LOCATION
+        );
+    }
+
+    private void requestBackgroundLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                    MY_PERMISSIONS_REQUEST_BACKGROUND_LOCATION
+            );
+        } else {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_LOCATION
+            );
+        }
+    }
+
+    public boolean checkLocationPermission1() {
         if (Build.VERSION.SDK_INT >= 23 && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             int fine_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
             int coarse_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -270,6 +345,7 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION}, PackageManager.PERMISSION_GRANTED);
             int fine_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
             int coarse_location_granted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
 
