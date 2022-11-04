@@ -216,7 +216,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
         SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
-        String userToken = sp1.getString(Constants.TOKEN, null);
+        String userToken = sp1.getString(Constants.FTOKEN, null);
         if(userToken != null){
             mFirebaseTask = new RegisterFirebaseTokenTask(userToken);
             mFirebaseTask.execute((Void) null);

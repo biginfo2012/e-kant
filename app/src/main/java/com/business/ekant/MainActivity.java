@@ -343,28 +343,29 @@ public class MainActivity extends AppCompatActivity {
                     alert11.show();
                     return;
                 }
-                if (!getIsNear(location)) {
-                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
-                    builder1.setMessage("出勤場所ではありません。\n" +
-                            "勤務場所でボタンを押してください。お願いします。");
-                    //builder1.setMessage(location.getLatitude() + "," + location.getLongitude() + "," + latitude_field + "," + longitude_field);
-                    builder1.setCancelable(true);
-
-                    builder1.setPositiveButton(
-                            "確認",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-                    AlertDialog alert11 = builder1.create();
-                    alert11.show();
-                    final Button positiveButton = alert11.getButton(AlertDialog.BUTTON_POSITIVE);
-                    LinearLayout.LayoutParams positiveButtonLL = (LinearLayout.LayoutParams) positiveButton.getLayoutParams();
-                    positiveButtonLL.gravity = Gravity.CENTER;
-                    positiveButton.setLayoutParams(positiveButtonLL);
-
-                } else {
+//                if (!getIsNear(location)) {
+//                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+////                    builder1.setMessage("出勤場所ではありません。\n" +
+////                            "勤務場所でボタンを押してください。お願いします。");
+//                    builder1.setMessage("現在位置：" + location.getLatitude() + "N, " + location.getLongitude() + "E\n" + "出勤場所：" + latitude_field + "N, " + longitude_field + "E");
+//                    builder1.setCancelable(true);
+//
+//                    builder1.setPositiveButton(
+//                            "確認",
+//                            new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int id) {
+//                                    dialog.cancel();
+//                                }
+//                            });
+//                    AlertDialog alert11 = builder1.create();
+//                    alert11.show();
+//                    final Button positiveButton = alert11.getButton(AlertDialog.BUTTON_POSITIVE);
+//                    LinearLayout.LayoutParams positiveButtonLL = (LinearLayout.LayoutParams) positiveButton.getLayoutParams();
+//                    positiveButtonLL.gravity = Gravity.CENTER;
+//                    positiveButton.setLayoutParams(positiveButtonLL);
+//
+//                }
+                else {
                     Date date = new Date();
                     int minute = date.getMinutes();
                     int hours = date.getHours();
@@ -734,7 +735,7 @@ public class MainActivity extends AppCompatActivity {
                     positiveButton.setLayoutParams(positiveButtonLL);
                     return;
                 }
-                if (r_time == null || r_time == "0") {
+                if (r_time == null || r_time.equals("0")) {
                     return;
                 }
                 Date date = new Date();
@@ -966,8 +967,33 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
+        SharedPreferences sp1 = getSharedPreferences(Constants.SHARE_PREF, 0);
+        token = sp1.getString(Constants.TOKEN, null);
+        fToken = sp1.getString(Constants.FTOKEN, null);
         mAuthTask = new UserInfoTask(token);
         mAuthTask.execute((Void) null);
+        if (fToken != null) {
+            mFirebaseTask = new RegisterFirebaseTokenTask(fToken);
+            mFirebaseTask.execute((Void) null);
+        }
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        //if (fToken == null) {
+                            fToken = task.getResult();
+                            mFirebaseTask = new RegisterFirebaseTokenTask(fToken);
+                            mFirebaseTask.execute((Void) null);
+                        //}
+                    }
+                });
         //startService();
     }
 
